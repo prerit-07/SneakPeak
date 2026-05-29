@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create post · SneakPeak</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="topbar">
+    <div class="shell">
+        <a class="brand" th:href="@{/}">SneakPeak</a>
+        <nav class="nav">
+            <a th:href="@{/}">Feed</a>
+            <span sec:authorize="isAuthenticated()" th:text="${currentDisplayName}">user</span>
+        </nav>
+    </div>
+</header>
+<main class="shell page">
+    <div class="card">
+        <h1>Create post</h1>
+        <form class="form" th:action="@{/posts}" th:object="${postForm}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="errors" th:if="${#fields.hasAnyErrors()}">
+                <div th:each="err : ${#fields.allErrors()}" th:text="${err}">Error</div>
+            </div>
+            <div class="field">
+                <label for="sneakerName">Sneaker name</label>
+                <input id="sneakerName" th:field="*{sneakerName}" required maxlength="120">
+            </div>
+            <div class="field">
+                <label for="price">Original Price</label>
+                <input id="price" th:field="*{price}" type="number" min="0.01" step="0.01" required>
+            </div>
+            <div class="field">
+                <label for="productLink">Product Link (optional)</label>
+                <input id="productLink" th:field="*{productLink}" type="url" maxlength="500" placeholder="https://example.com/product">
+            </div>
+            <div class="field">
+                <label for="description">Description/comment</label>
+                <textarea id="description" th:field="*{description}" required maxlength="1000"></textarea>
+            </div>
+            <label class="checkbox-row">
+                <input id="sale" th:field="*{sale}" type="checkbox">
+                <span>This is a sale/deal</span>
+            </label>
+            <div id="sale-fields" class="form">
+                <div class="field">
+                    <label for="platform">Platform</label>
+                    <select id="platform" th:field="*{platform}">
+                        <option value="">Choose platform</option>
+                        <option th:each="platform : ${platforms}" th:value="${platform}" th:text="${platform.label}">Platform</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="eventName">Event name</label>
+                    <input id="eventName" th:field="*{eventName}" maxlength="120">
+                </div>
+                <div class="field">
+                    <label for="offeredPrice">Offered price</label>
+                    <input id="offeredPrice" th:field="*{offeredPrice}" type="number" min="0.01" step="0.01">
+                </div>
+                <div class="field">
+                    <label for="offerDetails">More about the offered price</label>
+                    <textarea id="offerDetails" th:field="*{offerDetails}" maxlength="1200"></textarea>
+                </div>
+            </div>
+            <button class="button" type="submit">Submit post</button>
+        </form>
+    </div>
+</main>
+<script>
+    const sale = document.getElementById('sale');
+    const fields = document.getElementById('sale-fields');
+    function syncSaleFields() {
+        fields.style.display = sale.checked ? 'grid' : 'none';
+    }
+    sale.addEventListener('change', syncSaleFields);
+    syncSaleFields();
+</script>
+</body>
+</html>

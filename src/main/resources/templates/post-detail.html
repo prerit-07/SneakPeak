@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${post.sneakerName} + ' · SneakPeak'">Post · SneakPeak</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="topbar">
+    <div class="shell">
+        <a class="brand" th:href="@{/}">SneakPeak</a>
+        <nav class="nav">
+            <a th:href="@{/}">Feed</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/posts/new}">Post</a>
+            <span sec:authorize="isAuthenticated()" th:text="${currentDisplayName}">user</span>
+        </nav>
+    </div>
+</header>
+<main class="shell page stack">
+    <article class="card">
+        <div class="post-header">
+            <div>
+                <h1 th:text="${post.sneakerName}">Sneaker</h1>
+                <div class="muted">
+                    Posted by <span th:text="${post.user.username}">user</span>
+                    · <span th:text="${#temporals.format(post.createdAt, 'dd MMM yyyy HH:mm')}">time</span>
+                </div>
+            </div>
+            <div class="price">₹<span th:text="${post.sale ? post.offeredPrice : post.price}">0</span></div>
+        </div>
+        <p th:text="${post.description}">Description</p>
+        <div th:if="${post.productLink}">
+            <a th:href="${post.productLink}" target="_blank" class="button secondary">View Product</a>
+        </div>
+        <div class="deal" th:if="${post.sale}">
+            <strong th:text="${post.platform.label}">Platform</strong>
+            · <span th:text="${post.eventName}">Event</span>
+            <div>Original price: ₹<span th:text="${post.price}">0</span></div>
+            <div>Offered price: ₹<span th:text="${post.offeredPrice}">0</span></div>
+            <p th:text="${post.offerDetails}">Offer details</p>
+        </div>
+        <div class="actions">
+            <form sec:authorize="isAuthenticated()" th:action="@{/posts/{id}/vote(id=${post.id})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" name="returnTo" value="detail">
+                <button class="button secondary" type="submit">Upvote</button>
+            </form>
+            <span>▲ <span th:text="${voteCount}">0</span></span>
+            <span><span th:text="${commentCount}">0</span> comments</span>
+        </div>
+    </article>
+
+    <section class="card">
+        <h2>Comments</h2>
+        <p class="alert error" th:if="${error}" th:text="${error}">Error</p>
+        <form sec:authorize="isAuthenticated()" class="form" th:action="@{/posts/{id}/comments(id=${post.id})}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="field">
+                <label for="content">Add comment</label>
+                <textarea id="content" name="content" required maxlength="800"></textarea>
+            </div>
+            <button class="button" type="submit">Comment</button>
+        </form>
+        <p sec:authorize="!isAuthenticated()"><a th:href="@{/login}">Login</a> to comment.</p>
+        <div class="stack" style="margin-top: 18px;">
+            <div th:each="comment : ${comments}">
+                <strong th:text="${comment.user.username}">user</strong>
+                <span class="muted" th:text="${#temporals.format(comment.createdAt, 'dd MMM yyyy HH:mm')}">time</span>
+                <p th:text="${comment.content}">Comment</p>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

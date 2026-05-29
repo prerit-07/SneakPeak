@@ -1,0 +1,8 @@
+target/
+.mvn/
+!.mvn/wrapper/
+*.iml
+.idea/
+.vscode/
+.env
+application-local.properties
