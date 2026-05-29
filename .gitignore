@@ -4,5 +4,45 @@ target/
 *.iml
 .idea/
 .vscode/
+
+# Environment & Secrets
 .env
+.env.local
+.env.*.local
 application-local.properties
+application-*.properties
+
+# Sensitive files
+*.key
+*.pem
+*.pfx
+*.p12
+credentials.json
+
+# Build artifacts
+*.class
+*.jar
+*.war
+*.nar
+*.zip
+*.tar.gz
+*.rar
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+test-results/
+.gradle/
