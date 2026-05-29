@@ -3,70 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SneakPeak</title>
+    <title>SneakPeak — Curated Sneaker Deals</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
+
 <header class="topbar">
     <div class="shell">
-        <a class="brand" th:href="@{/}">SneakPeak</a>
+        <a class="brand" th:href="@{/}">SneakPeak <span class="brand-dot"></span></a>
         <nav class="nav">
-            <a sec:authorize="isAuthenticated()" th:href="@{/posts/new}">Post</a>
-            <span sec:authorize="isAuthenticated()" th:text="${currentDisplayName}">user</span>
-            <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
+            <a sec:authorize="isAuthenticated()" th:href="@{/posts/new}" class="nav-cta">+ Post</a>
+            <div class="nav-separator" sec:authorize="isAuthenticated()"></div>
+            <span sec:authorize="isAuthenticated()" class="nav-username" th:text="${currentDisplayName}">user</span>
+            <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="display:inline;">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <button class="link-button" type="submit">Logout</button>
             </form>
             <a sec:authorize="!isAuthenticated()" th:href="@{/login}">Login</a>
-            <a sec:authorize="!isAuthenticated()" th:href="@{/signup}">Signup</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/signup}" class="nav-cta">Join</a>
         </nav>
     </div>
 </header>
+
 <main class="shell page">
     <div class="page-title">
-        <h1>Feed</h1>
-        <a sec:authorize="isAuthenticated()" class="button" th:href="@{/posts/new}">Create post</a>
+        <div>
+            <span style="display: block; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-4); margin-bottom: 4px;">Community Finds</span>
+            <h1>The Feed</h1>
+        </div>
+        <a sec:authorize="isAuthenticated()" class="button" th:href="@{/posts/new}">Share a Find</a>
     </div>
 
-    <section class="stack" th:if="${posts.isEmpty()}">
-        <div class="card">No posts yet.</div>
-    </section>
+    <!-- Empty state -->
+    <div class="empty-state" th:if="${posts.isEmpty()}">
+        <h2>Nothing here yet.</h2>
+        <p>Be the first to share a sneaker find with the community.</p>
+    </div>
 
-    <section class="stack">
-        <article class="card" th:each="item : ${posts}">
+    <!-- Posts feed -->
+    <section class="stack" th:unless="${posts.isEmpty()}">
+        <article class="post-card" th:each="item : ${posts}">
+
             <div class="post-header">
                 <div>
-                    <h2><a th:href="@{/posts/{id}(id=${item.post.id})}" th:text="${item.post.sneakerName}">Sneaker</a></h2>
-                    <div class="muted">
-                        Posted by <span th:text="${item.post.user.username}">user</span>
-                        · <span th:text="${#temporals.format(item.post.createdAt, 'dd MMM yyyy HH:mm')}">time</span>
+                    <h2><a th:href="@{/posts/{id}(id=${item.post.id})}" th:text="${item.post.sneakerName}">Sneaker Name</a></h2>
+                    <div class="post-meta">
+                        <a th:href="#" th:text="${item.post.user.username}">username</a>
+                        <span class="sep">·</span>
+                        <span th:text="${#temporals.format(item.post.createdAt, 'dd MMM yyyy')}">date</span>
                     </div>
                 </div>
-                <div class="price">₹<span th:text="${item.displayPrice()}">0</span></div>
+
+                <div class="price-badge">
+                    <span class="price-label" th:if="${item.post.sale}">From</span>
+                    <span class="price-label" th:unless="${item.post.sale}">Price</span>
+                    <span class="price-value" th:classappend="${item.post.sale} ? 'sale' : ''">₹<span th:text="${item.displayPrice()}">0</span></span>
+                </div>
             </div>
-            <p th:text="${item.post.description}">Description</p>
+
+            <p class="post-desc" th:text="${item.post.description}">Description goes here.</p>
+
             <div th:if="${item.post.productLink}">
-                <a th:href="${item.post.productLink}" target="_blank" class="button secondary">View Product</a>
+                <a th:href="${item.post.productLink}" target="_blank" class="button secondary">
+                    View Product ↗
+                </a>
             </div>
+
+            <!-- Deal block -->
             <div class="deal" th:if="${item.post.sale}">
-                <strong th:text="${item.post.platform.label}">Platform</strong>
-                · <span th:text="${item.post.eventName}">Event</span>
-                <div>Original price: ₹<span th:text="${item.post.price}">0</span></div>
-                <div>Offered price: ₹<span th:text="${item.post.offeredPrice}">0</span></div>
-                <p th:text="${item.post.offerDetails}">Offer details</p>
+                <div class="deal-header">
+                    <span class="deal-platform" th:text="${item.post.platform.label}">Platform</span>
+                    <span class="deal-event" th:text="${item.post.eventName}">Event name</span>
+                </div>
+                <div class="deal-prices">
+                    <span class="deal-original">₹<span th:text="${item.post.price}">0</span></span>
+                    <span class="deal-offered">₹<span th:text="${item.post.offeredPrice}">0</span></span>
+                </div>
+                <p class="deal-details" th:if="${item.post.offerDetails}" th:text="${item.post.offerDetails}">Offer details</p>
             </div>
+
+            <!-- Actions bar -->
             <div class="actions">
                 <form sec:authorize="isAuthenticated()" th:action="@{/posts/{id}/vote(id=${item.post.id})}" method="post">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                    <button class="button secondary" type="submit">Upvote</button>
+                    <button class="btn-vote" type="submit"><span class="arrow">▲</span> Upvote</button>
                 </form>
-                <span>▲ <span th:text="${item.voteCount}">0</span></span>
-                <a th:href="@{/posts/{id}(id=${item.post.id})}">
+                <span class="vote-count">
+                    <span class="arrow">▲</span>
+                    <span th:text="${item.voteCount}">0</span>
+                </span>
+                <a class="comment-link" th:href="@{/posts/{id}(id=${item.post.id})}">
                     <span th:text="${item.commentCount}">0</span> comments
                 </a>
+                <a class="comment-link" style="margin-left: auto;" th:href="@{/posts/{id}(id=${item.post.id})}">
+                    View post →
+                </a>
             </div>
+
         </article>
     </section>
 </main>
+
 </body>
 </html>

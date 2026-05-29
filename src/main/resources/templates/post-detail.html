@@ -7,70 +7,121 @@
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
+
 <header class="topbar">
     <div class="shell">
-        <a class="brand" th:href="@{/}">SneakPeak</a>
+        <a class="brand" th:href="@{/}">SneakPeak <span class="brand-dot"></span></a>
         <nav class="nav">
-            <a th:href="@{/}">Feed</a>
-            <a sec:authorize="isAuthenticated()" th:href="@{/posts/new}">Post</a>
-            <span sec:authorize="isAuthenticated()" th:text="${currentDisplayName}">user</span>
+            <a th:href="@{/}">Browse Feed</a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/posts/new}" class="nav-cta">+ Post</a>
+            <div class="nav-separator" sec:authorize="isAuthenticated()"></div>
+            <span sec:authorize="isAuthenticated()" class="nav-username" th:text="${currentDisplayName}">user</span>
         </nav>
     </div>
 </header>
-<main class="shell page stack">
-    <article class="card">
+
+<main class="shell page">
+    
+    <!-- Main Post Card -->
+    <article class="card" style="margin-bottom: 40px;">
+        
         <div class="post-header">
             <div>
-                <h1 th:text="${post.sneakerName}">Sneaker</h1>
-                <div class="muted">
-                    Posted by <span th:text="${post.user.username}">user</span>
-                    · <span th:text="${#temporals.format(post.createdAt, 'dd MMM yyyy HH:mm')}">time</span>
+                <h1 class="post-detail-title" th:text="${post.sneakerName}">Sneaker Name</h1>
+                <div class="post-meta">
+                    <a th:href="#" th:text="${post.user.username}">username</a>
+                    <span class="sep">·</span>
+                    <span th:text="${#temporals.format(post.createdAt, 'dd MMM yyyy')}">date</span>
                 </div>
             </div>
-            <div class="price">₹<span th:text="${post.sale ? post.offeredPrice : post.price}">0</span></div>
+            <div class="price-badge">
+                <span class="price-label" th:if="${post.sale}">From</span>
+                <span class="price-label" th:unless="${post.sale}">Price</span>
+                <span class="price-value" th:classappend="${post.sale} ? 'sale' : ''">₹<span th:text="${post.sale ? post.offeredPrice : post.price}">0</span></span>
+            </div>
         </div>
-        <p th:text="${post.description}">Description</p>
+
+        <p class="post-desc" th:text="${post.description}">Description goes here.</p>
+
         <div th:if="${post.productLink}">
-            <a th:href="${post.productLink}" target="_blank" class="button secondary">View Product</a>
+            <a th:href="${post.productLink}" target="_blank" class="button secondary">
+                View Product ↗
+            </a>
         </div>
+
+        <!-- Deal block -->
         <div class="deal" th:if="${post.sale}">
-            <strong th:text="${post.platform.label}">Platform</strong>
-            · <span th:text="${post.eventName}">Event</span>
-            <div>Original price: ₹<span th:text="${post.price}">0</span></div>
-            <div>Offered price: ₹<span th:text="${post.offeredPrice}">0</span></div>
-            <p th:text="${post.offerDetails}">Offer details</p>
+            <div class="deal-header">
+                <span class="deal-platform" th:text="${post.platform.label}">Platform</span>
+                <span class="deal-event" th:text="${post.eventName}">Event name</span>
+            </div>
+            <div class="deal-prices">
+                <span class="deal-original">₹<span th:text="${post.price}">0</span></span>
+                <span class="deal-offered">₹<span th:text="${post.offeredPrice}">0</span></span>
+            </div>
+            <p class="deal-details" th:if="${post.offerDetails}" th:text="${post.offerDetails}">Offer details</p>
         </div>
+
+        <!-- Actions bar -->
         <div class="actions">
             <form sec:authorize="isAuthenticated()" th:action="@{/posts/{id}/vote(id=${post.id})}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <input type="hidden" name="returnTo" value="detail">
-                <button class="button secondary" type="submit">Upvote</button>
+                <button class="btn-vote" type="submit"><span class="arrow">▲</span> Upvote</button>
             </form>
-            <span>▲ <span th:text="${voteCount}">0</span></span>
-            <span><span th:text="${commentCount}">0</span> comments</span>
+            <span class="vote-count">
+                <span class="arrow">▲</span>
+                <span th:text="${voteCount}">0</span>
+            </span>
+            <span style="font-size: 13px; color: var(--ink-3);">
+                <span th:text="${commentCount}">0</span> comments
+            </span>
         </div>
+
     </article>
 
-    <section class="card">
-        <h2>Comments</h2>
-        <p class="alert error" th:if="${error}" th:text="${error}">Error</p>
-        <form sec:authorize="isAuthenticated()" class="form" th:action="@{/posts/{id}/comments(id=${post.id})}" method="post">
+    <!-- Comments Section -->
+    <section class="card" style="max-width: 100%;">
+        <h2 style="margin-bottom: 24px;">Comments</h2>
+
+        <div class="alert error" th:if="${error}" th:text="${error}"></div>
+
+        <!-- Comment Form -->
+        <form sec:authorize="isAuthenticated()" class="form" th:action="@{/posts/{id}/comments(id=${post.id})}" method="post" style="margin-bottom: 32px;">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <div class="field">
-                <label for="content">Add comment</label>
-                <textarea id="content" name="content" required maxlength="800"></textarea>
+                <label for="content">Share your thoughts</label>
+                <textarea id="content" name="content" required maxlength="800" placeholder="What do you think about this find?"></textarea>
             </div>
-            <button class="button" type="submit">Comment</button>
+            <button class="button" type="submit">Post comment</button>
         </form>
-        <p sec:authorize="!isAuthenticated()"><a th:href="@{/login}">Login</a> to comment.</p>
-        <div class="stack" style="margin-top: 18px;">
-            <div th:each="comment : ${comments}">
-                <strong th:text="${comment.user.username}">user</strong>
-                <span class="muted" th:text="${#temporals.format(comment.createdAt, 'dd MMM yyyy HH:mm')}">time</span>
-                <p th:text="${comment.content}">Comment</p>
+
+        <div sec:authorize="!isAuthenticated()" style="padding: 20px; background: var(--surface-2); border-radius: var(--r-lg); text-align: center; color: var(--ink-3);">
+            <a th:href="@{/login}">Sign in</a> to join the conversation.
+        </div>
+
+        <!-- Comments List -->
+        <div th:if="${!comments.isEmpty()}">
+            <div class="stack">
+                <article class="comment-item" th:each="comment : ${comments}">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <div>
+                            <span class="comment-author" th:text="${comment.user.username}">username</span>
+                            <span class="comment-time" th:text="${#temporals.format(comment.createdAt, 'dd MMM yyyy HH:mm')}">date</span>
+                        </div>
+                    </div>
+                    <p class="comment-body" th:text="${comment.content}">Comment text</p>
+                </article>
             </div>
         </div>
+
+        <div th:if="${comments.isEmpty()}" class="empty-state" style="padding: 32px 0; text-align: center;">
+            <p>No comments yet. Be the first to share your thoughts!</p>
+        </div>
+
     </section>
+
 </main>
+
 </body>
 </html>
