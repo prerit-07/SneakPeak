@@ -1,125 +1,141 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Share a Find · SneakPeak</title>
-    <link rel="stylesheet" th:href="@{/css/app.css}">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Post a Deal · SneakPeak</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"/>
 </head>
 <body>
 
-<header class="topbar">
-    <div class="shell">
-        <a class="brand" th:href="@{/}">SneakPeak <span class="brand-dot"></span></a>
-        <nav class="nav">
-            <a th:href="@{/}">Browse Feed</a>
-            <div class="nav-separator"></div>
-            <span sec:authorize="isAuthenticated()" class="nav-username" th:text="${currentDisplayName}">user</span>
-        </nav>
-    </div>
-</header>
+<nav>
+  <a th:href="@{/}" class="nav-logo">SNEAK<span>PEAK</span></a>
+  <div class="nav-r">
+    <a th:href="@{/}" class="btn-post">← Back</a>
+    <div class="avatar" sec:authorize="isAuthenticated()" th:text="${#strings.substring(#authentication.name, 0, 1).toUpperCase()}">P</div>
+  </div>
+</nav>
 
-<main class="shell page">
-    <div class="page-title">
-        <div>
-            <span style="display: block; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-4); margin-bottom: 4px;">Share</span>
-            <h1>Post a Find</h1>
+<div class="detail-wrap">
+  <div class="form-card">
+    <div class="form-title">POST A <span style="color:var(--accent)">DEAL</span></div>
+    <div class="form-sub">AI verified — sneakers only 🤖</div>
+    
+    <form th:action="@{/posts}" th:object="${postForm}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <input type="hidden" th:field="*{sale}" id="saleInput" />
+      
+      <div th:if="${#fields.hasAnyErrors()}" class="error-msg">
+        <div th:each="err : ${#fields.allErrors()}" th:text="${err}">Error</div>
+      </div>
+      
+      <div class="fg">
+        <label>Post Type</label>
+        <div class="category-picker">
+          <button type="button" id="cat-deal" class="cat-btn active" onclick="selCat(this, true)">Deal</button>
+          <button type="button" id="cat-cop" class="cat-btn" onclick="selCat(this, false)">Cop or Drop?</button>
+          <button type="button" id="cat-review" class="cat-btn" onclick="selCat(this, false)">Review</button>
+          <button type="button" id="cat-sizing" class="cat-btn" onclick="selCat(this, false)">Sizing</button>
         </div>
-    </div>
-
-    <div style="max-width: 680px;">
-        <div class="card">
-            
-            <!-- Form Errors -->
-            <div class="errors" th:if="${#fields.hasAnyErrors()}">
-                <div th:each="err : ${#fields.allErrors()}" th:text="${err}">Error</div>
-            </div>
-
-            <!-- Post Form -->
-            <form class="form" th:action="@{/posts}" th:object="${postForm}" method="post">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                
-                <!-- Basic Info Section -->
-                <div class="form-section">
-                    <h3 class="form-section-title">About the Sneaker</h3>
-                    
-                    <div class="field">
-                        <label for="sneakerName">Sneaker Name</label>
-                        <input id="sneakerName" th:field="*{sneakerName}" required maxlength="120" placeholder="e.g. Nike Air Max 90">
-                    </div>
-                    
-                    <div class="field">
-                        <label for="description">Description</label>
-                        <textarea id="description" th:field="*{description}" required maxlength="1000" placeholder="What's special about this find? Why should others care?"></textarea>
-                    </div>
-                </div>
-
-                <!-- Pricing Section -->
-                <div class="form-section">
-                    <h3 class="form-section-title">Pricing & Links</h3>
-                    
-                    <div class="field">
-                        <label for="price">Original Price (₹)</label>
-                        <input id="price" th:field="*{price}" type="number" min="0.01" step="0.01" required placeholder="0.00">
-                    </div>
-                    
-                    <div class="field">
-                        <label for="productLink">Product Link</label>
-                        <input id="productLink" th:field="*{productLink}" type="url" maxlength="500" placeholder="https://example.com/product">
-                    </div>
-                </div>
-
-                <!-- Deal Section -->
-                <label class="checkbox-row" style="margin: 20px 0; padding: 0;">
-                    <input id="sale" th:field="*{sale}" type="checkbox">
-                    <span>Mark as a sale or special deal</span>
-                </label>
-
-                <div id="sale-fields" class="form" style="display: none;">
-                    <div class="form-section">
-                        <h3 class="form-section-title">Deal Information</h3>
-                        
-                        <div class="field">
-                            <label for="platform">Where</label>
-                            <select id="platform" th:field="*{platform}">
-                                <option value="">Choose platform</option>
-                                <option th:each="platform : ${platforms}" th:value="${platform}" th:text="${platform.label}">Platform</option>
-                            </select>
-                        </div>
-                        
-                        <div class="field">
-                            <label for="eventName">Event Name</label>
-                            <input id="eventName" th:field="*{eventName}" maxlength="120" placeholder="e.g. Summer Sale, Flash Deal">
-                        </div>
-                        
-                        <div class="field">
-                            <label for="offeredPrice">Deal Price (₹)</label>
-                            <input id="offeredPrice" th:field="*{offeredPrice}" type="number" min="0.01" step="0.01" placeholder="0.00">
-                        </div>
-                        
-                        <div class="field">
-                            <label for="offerDetails">Deal Details</label>
-                            <textarea id="offerDetails" th:field="*{offerDetails}" maxlength="1200" placeholder="Coupon code, validity period, additional conditions..."></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <button class="button" type="submit" style="width: 100%;">Post this Find</button>
-            </form>
-
+      </div>
+      
+      <div class="fg">
+        <label>Sneaker Name *</label>
+        <input type="text" th:field="*{sneakerName}" placeholder="e.g. Adidas Samba OG White" required/>
+      </div>
+      
+      <div class="fg">
+        <label>Regular Price (₹) *</label>
+        <input type="number" th:field="*{price}" id="price" placeholder="e.g. 5499" required min="0"/>
+      </div>
+      
+      <!-- Toggleable Sale specific fields -->
+      <div id="saleSection">
+        <div class="fg">
+          <label>Platform *</label>
+          <select th:field="*{platform}" id="platformSelect">
+            <option value="">Select platform</option>
+            <option th:each="p : ${platforms}" th:value="${p}" th:text="${p.label}">Platform</option>
+          </select>
         </div>
-    </div>
-</main>
+        
+        <div class="row2">
+          <div class="fg">
+            <label>Sale Event *</label>
+            <input type="text" th:field="*{eventName}" id="eventNameInput" placeholder="e.g. EOSS, Big Billion Days"/>
+          </div>
+          <div class="fg">
+            <label>Deal Price (₹) *</label>
+            <input type="number" th:field="*{offeredPrice}" id="offeredPriceInput" placeholder="e.g. 4949" min="0"/>
+          </div>
+        </div>
+        
+        <div class="fg">
+          <label>Offer Details *</label>
+          <input type="text" th:field="*{offerDetails}" id="offerDetailsInput" placeholder="e.g. SBI card 10% off, SBI cashback"/>
+        </div>
+        
+        <div class="fg">
+          <label>Product Link (optional)</label>
+          <input type="url" th:field="*{productLink}" placeholder="https://example.com/product"/>
+        </div>
+      </div>
+      
+      <div class="fg">
+        <label>What do you want to say? *</label>
+        <textarea th:field="*{description}" placeholder="Share deal details, your review, sizing tips... anything that helps fellow sneakerheads 👟" required></textarea>
+      </div>
+      
+      <div class="ai-tag">🤖 AI verified · sneaker content only</div>
+      <button type="submit" class="submit-btn">DROP IT →</button>
+    </form>
+  </div>
+</div>
 
 <script>
-    const sale = document.getElementById('sale');
-    const fields = document.getElementById('sale-fields');
-    function syncSaleFields() {
-        fields.style.display = sale.checked ? 'grid' : 'none';
-    }
-    sale.addEventListener('change', syncSaleFields);
-    syncSaleFields();
-</script>
+function selCat(btn, isSale){
+  // Toggle active button style
+  document.querySelectorAll('.cat-btn').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  
+  // Update the hidden input
+  document.getElementById('saleInput').value = isSale;
+  
+  // Toggle sale-specific fields visibility and required attributes
+  const saleSection = document.getElementById('saleSection');
+  const platformSelect = document.getElementById('platformSelect');
+  const eventNameInput = document.getElementById('eventNameInput');
+  const offeredPriceInput = document.getElementById('offeredPriceInput');
+  const offerDetailsInput = document.getElementById('offerDetailsInput');
 
+  if (isSale) {
+    saleSection.style.display = 'block';
+    platformSelect.required = true;
+    eventNameInput.required = true;
+    offeredPriceInput.required = true;
+    offerDetailsInput.required = true;
+  } else {
+    saleSection.style.display = 'none';
+    platformSelect.required = false;
+    eventNameInput.required = false;
+    offeredPriceInput.required = false;
+    offerDetailsInput.required = false;
+  }
+}
+
+// Sync selection on page load
+document.addEventListener("DOMContentLoaded", () => {
+  const saleInput = document.getElementById('saleInput');
+  const price = document.getElementById('price').value;
+  // If sale input is explicitly "true" OR if it's a fresh form (sale is false but price is not set yet), default to true/Deal
+  const isSale = saleInput.value === "true" || (saleInput.value !== "false" && !price);
+  
+  if (isSale) {
+    selCat(document.getElementById('cat-deal'), true);
+  } else {
+    selCat(document.getElementById('cat-cop'), false);
+  }
+});
+</script>
 </body>
 </html>

@@ -165,4 +165,9 @@ public class Post {
     public Instant getCreatedAt() {
         return createdAt;
     }
+
+    public String getCategory() {
+        return isSale() ? "🔥 Deal" : "💬 Discussion";
+    }
 }
+

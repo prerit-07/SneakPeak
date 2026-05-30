@@ -104,5 +104,33 @@ public class PostService {
         public BigDecimal displayPrice() {
             return post.isSale() && post.getOfferedPrice() != null ? post.getOfferedPrice() : post.getPrice();
         }
+
+        public String avatarBg() {
+            return getAvatarBg();
+        }
+
+        public String getAvatarBg() {
+            int hash = post.getUser().getUsername().hashCode();
+            String[] bgs = { "#ffd6cc", "#d1f2d9", "#dbe6ff", "#fff2cc", "#f3d1f2", "#e2ddd6" };
+            return bgs[Math.abs(hash % bgs.length)];
+        }
+
+        public String avatarColor() {
+            return getAvatarColor();
+        }
+
+        public String getAvatarColor() {
+            int hash = post.getUser().getUsername().hashCode();
+            String[] colors = { "#c82000", "#1a5c2a", "#1b3a99", "#7a5c00", "#991b93", "#3a3a36" };
+            return colors[Math.abs(hash % colors.length)];
+        }
+
+        public boolean userVoted() {
+            return isUserVoted();
+        }
+
+        public boolean isUserVoted() {
+            return false;
+        }
     }
 }

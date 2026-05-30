@@ -24,7 +24,11 @@ public class CurrentUserService {
         if (principal instanceof SneakPeakUserDetails details) {
             userId = details.getId();
         } else if (principal instanceof OAuth2User oauth2User) {
-            userId = ((Number) oauth2User.getAttribute("localUserId")).longValue();
+            Object localUserIdAttr = oauth2User.getAttribute("localUserId");
+            if (localUserIdAttr == null) {
+                throw new IllegalStateException("OAuth2 user missing localUserId attribute.");
+            }
+            userId = ((Number) localUserIdAttr).longValue();
         } else {
             throw new IllegalStateException("Unsupported principal type.");
         }
